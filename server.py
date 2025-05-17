@@ -8,7 +8,8 @@ import os
 import subprocess
 from chembl_webresource_client.new_client import new_client
 import time
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
+
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -145,6 +146,11 @@ def predict_pic50(chembl_id):
     print("Predicting pIC50...")
     y_pred = svr.predict(K_new)
     return y_pred[0]
+
+@app.route('/')
+def home():
+    return render_template('new3.html')
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
