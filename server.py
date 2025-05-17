@@ -147,12 +147,18 @@ def predict_pic50(chembl_id):
     y_pred = svr.predict(K_new)
     return y_pred[0]
 
+<<<<<<< HEAD
 @app.route('/')
 def home():
     return render_template('new3.html')
 
 
 @app.route('/predict', methods=['POST'])
+=======
+@app.route('/', methods=['POST'])
+def home():
+    return render_template('new3.html')
+>>>>>>> cecc12bb0bcc7d493c4df6e237e25cdbcfd3c460
 def predict():
     try:
         data = request.get_json()
@@ -172,4 +178,5 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)
