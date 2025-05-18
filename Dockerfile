@@ -13,10 +13,14 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN java -version || echo "Java installation failed during build"
 RUN which java || echo "Java binary not found in PATH during build"
 RUN echo "PATH during build: $PATH"
-RUN ls -ld $JAVA_HOME/bin/java || echo "JAVA_HOME binary not found"
+# Find the actual Java path
+RUN find / -name "java" 2>/dev/null || echo "Java binary not found anywhere"
+# Dynamically set JAVA_HOME
+RUN JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))) && \
+    echo "JAVA_HOME is: $JAVA_HOME"
 
 # Set JAVA_HOME and PATH
-ENV JAVA_HOME=/opt/java/openjdk
+ENV JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 RUN java -version || echo "Java still not found after setting JAVA_HOME"
