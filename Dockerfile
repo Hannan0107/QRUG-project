@@ -1,4 +1,8 @@
+# Use the Eclipse Temurin Java 11 JRE as the base image
 FROM eclipse-temurin:11-jre
+
+# Set the working directory to /app at the start
+WORKDIR /app
 
 # Install Python and dependencies
 RUN apt-get update && apt-get install -y \
@@ -9,19 +13,23 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-# Debug Java installation
+# Verify Java installation
 RUN java -version || echo "Java installation failed during build"
 RUN which java || echo "Java binary not found in PATH during build"
 
-# Determine JAVA_HOME dynamically and write to a script
+# Set JAVA_HOME dynamically and create the environment script
 RUN JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))) && \
     echo "export JAVA_HOME=$JAVA_HOME" > /app/set_java_home.sh && \
     echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /app/set_java_home.sh
 
-WORKDIR /app
+# Copy application files
 COPY . .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt || echo "Failed to install dependencies"
+
+# Ensure scripts are executable
 RUN chmod +x padel.sh set_java_home.sh
 
-# Set the startup command to source the script and run gunicorn
+# Run the application with the environment script sourced
 CMD ["/bin/bash", "-c", ". /app/set_java_home.sh && gunicorn server:app --bind 0.0.0.0:${PORT:-5000}"]
