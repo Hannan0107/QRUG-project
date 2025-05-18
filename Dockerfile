@@ -1,11 +1,12 @@
-# Use a Python base image
 FROM python:3.9-slim
 
 # Set the working directory
 WORKDIR /app
 
-# Debug apt-get update and package installation
-RUN apt-get update || { echo "apt-get update failed"; exit 1; }
+# Update package sources and install Java and system dependencies
+RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list && \
+    apt-get update || { echo "apt-get update failed"; exit 1; }
 RUN apt-get install -y --no-install-recommends \
     openjdk-11-jre \
     build-essential \
@@ -13,17 +14,20 @@ RUN apt-get install -y --no-install-recommends \
     || { echo "apt-get install failed"; exit 1; }
 RUN rm -rf /var/lib/apt/lists/*
 
+# Verify Java installation
+RUN java -version || echo "Java installation failed during build"
+
+# Set JAVA_HOME dynamically and create the environment script
+RUN JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))) && \
+    echo "export JAVA_HOME=$JAVA_HOME" > /app/set_java_home.sh && \
+    echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /app/set_java_home.sh
+
 # Verify Python and pip versions
 RUN python --version
 RUN pip --version
 
 # Upgrade pip to avoid potential issues
 RUN pip install --upgrade pip
-
-# Set JAVA_HOME dynamically and create the environment script
-RUN JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))) && \
-    echo "export JAVA_HOME=$JAVA_HOME" > /app/set_java_home.sh && \
-    echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /app/set_java_home.sh
 
 # Copy application files
 COPY . .
