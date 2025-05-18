@@ -1,24 +1,22 @@
-FROM eclipse-temurin:11-jre
+# Use a Python base image with Java pre-installed
+FROM python:3.9-slim
 
-# Set the working directory
-WORKDIR /app
-
-# Install Python and dependencies
+# Install Java and system dependencies
 RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
+    openjdk-11-jre \
     build-essential \
     cmake \
     && rm -rf /var/lib/apt/lists/*
-RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Set the working directory
+WORKDIR /app
 
 # Verify Python and pip versions
 RUN python --version
 RUN pip --version
 
-# Verify Java installation
-RUN java -version || echo "Java installation failed during build"
-RUN which java || echo "Java binary not found in PATH during build"
+# Upgrade pip to avoid potential issues
+RUN pip install --upgrade pip
 
 # Set JAVA_HOME dynamically and create the environment script
 RUN JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))) && \
@@ -28,11 +26,14 @@ RUN JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))) && \
 # Copy application files
 COPY . .
 
-# Install Python dependencies and debug gunicorn installation
-RUN pip install --no-cache-dir -r requirements.txt || echo "Failed to install dependencies from requirements.txt"
-RUN pip install gunicorn==20.1.0 || echo "Failed to install gunicorn separately"
+# Install gunicorn first to isolate it from other dependencies
+RUN pip install gunicorn==20.1.0 --verbose || echo "Failed to install gunicorn"
+RUN pip list | grep gunicorn || echo "gunicorn not in pip list"
 RUN pip show gunicorn || echo "pip show gunicorn failed"
 RUN which gunicorn || echo "gunicorn not found after installation"
+
+# Install other dependencies from requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt --verbose || echo "Failed to install dependencies from requirements.txt"
 
 # Ensure scripts are executable
 RUN chmod +x padel.sh set_java_home.sh
