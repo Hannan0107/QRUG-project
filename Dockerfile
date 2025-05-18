@@ -1,15 +1,17 @@
-# Use a Python base image with Java pre-installed
+# Use a Python base image
 FROM python:3.9-slim
-
-# Install Java and system dependencies
-RUN apt-get update && apt-get install -y \
-    openjdk-11-jre \
-    build-essential \
-    cmake \
-    && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
+
+# Debug apt-get update and package installation
+RUN apt-get update || { echo "apt-get update failed"; exit 1; }
+RUN apt-get install -y --no-install-recommends \
+    openjdk-11-jre \
+    build-essential \
+    cmake \
+    || { echo "apt-get install failed"; exit 1; }
+RUN rm -rf /var/lib/apt/lists/*
 
 # Verify Python and pip versions
 RUN python --version
