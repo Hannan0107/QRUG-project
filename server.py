@@ -151,7 +151,7 @@ def predict_pic50(chembl_id):
 
 
 
-@app.route('/predict', methods=['POST'])
+@app.route('/', methods=['POST'])
 def home():
     return render_template('new3.html')
 def predict():
