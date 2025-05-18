@@ -12,6 +12,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
+# Verify Python and pip versions
+RUN python --version
+RUN pip --version
+
 # Verify Java installation
 RUN java -version || echo "Java installation failed during build"
 RUN which java || echo "Java binary not found in PATH during build"
@@ -24,13 +28,14 @@ RUN JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))) && \
 # Copy application files
 COPY . .
 
-# Install Python dependencies and verify gunicorn installation
-RUN pip install --no-cache-dir -r requirements.txt || echo "Failed to install dependencies"
-RUN pip install gunicorn || echo "Failed to install gunicorn separately"
+# Install Python dependencies and debug gunicorn installation
+RUN pip install --no-cache-dir -r requirements.txt || echo "Failed to install dependencies from requirements.txt"
+RUN pip install gunicorn==20.1.0 || echo "Failed to install gunicorn separately"
+RUN pip show gunicorn || echo "pip show gunicorn failed"
 RUN which gunicorn || echo "gunicorn not found after installation"
 
 # Ensure scripts are executable
 RUN chmod +x padel.sh set_java_home.sh
 
-# Run the application with the environment script sourced
-CMD ["/bin/bash", "-c", ". /app/set_java_home.sh && gunicorn server:app --bind 0.0.0.0:${PORT:-5000}"]
+# Debug the port at runtime
+CMD ["/bin/bash", "-c", ". /app/set_java_home.sh && echo 'Binding to port ${PORT:-5000}' && gunicorn server:app --bind 0.0.0.0:${PORT:-5000}"]
