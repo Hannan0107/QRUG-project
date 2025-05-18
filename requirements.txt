@@ -9,3 +9,6 @@ chembl-webresource-client>=0.10.0
 gunicorn>=23.0.0
 rdkit>=2023.9.0
 scipy>=1.10.0
+padelpy==0.1.14
+setuptools>=72.1.0
+wheel>=0.44.0
