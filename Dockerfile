@@ -1,7 +1,6 @@
-# Use the Eclipse Temurin Java 11 JRE as the base image
 FROM eclipse-temurin:11-jre
 
-# Set the working directory to /app at the start
+# Set the working directory
 WORKDIR /app
 
 # Install Python and dependencies
@@ -25,8 +24,10 @@ RUN JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))) && \
 # Copy application files
 COPY . .
 
-# Install Python dependencies
+# Install Python dependencies and verify gunicorn installation
 RUN pip install --no-cache-dir -r requirements.txt || echo "Failed to install dependencies"
+RUN pip install gunicorn || echo "Failed to install gunicorn separately"
+RUN which gunicorn || echo "gunicorn not found after installation"
 
 # Ensure scripts are executable
 RUN chmod +x padel.sh set_java_home.sh
