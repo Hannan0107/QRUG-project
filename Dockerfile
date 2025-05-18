@@ -13,6 +13,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN java -version || echo "Java installation failed during build"
 RUN which java || echo "Java binary not found in PATH during build"
 RUN echo "PATH during build: $PATH"
+RUN ls -ld $JAVA_HOME/bin/java || echo "JAVA_HOME binary not found"
 
 # Set JAVA_HOME and PATH
 ENV JAVA_HOME=/opt/java/openjdk
