@@ -147,12 +147,13 @@ def predict_pic50(chembl_id):
     y_pred = svr.predict(K_new)
     return y_pred[0]
 
-@app.route('/')
-def home():
-    return render_template('new3.html')
+
+
 
 
 @app.route('/predict', methods=['POST'])
+def home():
+    return render_template('new3.html')
 def predict():
     try:
         data = request.get_json()
