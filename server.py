@@ -152,8 +152,6 @@ def home():
     return render_template('new3.html')
 
 @app.route('/predict', methods=['POST'])
-def home():
-    return render_template('new3.html')
 def predict():
     try:
         data = request.get_json()
