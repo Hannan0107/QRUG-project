@@ -1,17 +1,15 @@
-# Use a base image with both Python and Java
-FROM openjdk:11-jre-slim-buster
+FROM python:3.11-slim
 
-# Install Python and dependencies
-RUN apt-get update && apt-get install -y python3 python3-pip && rm -rf /var/lib/apt/lists/*
-RUN ln -s /usr/bin/python3 /usr/bin/python
+# Install Java and debug
+RUN apt-get update && apt-get install -y openjdk-11-jre && rm -rf /var/lib/apt/lists/*
+RUN java -version || echo "Java installation failed"
+RUN which java || echo "Java binary not found in PATH"
+RUN echo "PATH is: $PATH"
 
-# Verify Java and Python
-RUN java -version
-RUN python --version
-
-# Set JAVA_HOME
+# Set JAVA_HOME and update PATH
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ENV PATH=$JAVA_HOME/bin:$PATH
+RUN java -version || echo "Java still not found after setting PATH"
 
 WORKDIR /app
 COPY . .
